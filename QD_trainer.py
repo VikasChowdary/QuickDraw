@@ -11,7 +11,7 @@ import pickle
 from keras.callbacks import TensorBoard
 
 def keras_model(image_x, image_y):
-    num_of_classes = 15
+    num_of_classes = 29
     model = Sequential()
     model.add(Conv2D(32, (5, 5), input_shape=(image_x,image_y,1), activation='relu'))
     model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2), padding='same'))
