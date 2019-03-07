@@ -19,16 +19,17 @@ def main():
 
     while (cap.isOpened()):
         ret, img = cap.read()
+       
         img = cv2.flip(img, 1)
         hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
         kernel = np.ones((5, 5), np.uint8)
         mask = cv2.inRange(hsv, Lower_green, Upper_green)
         mask = cv2.erode(mask, kernel, iterations=2)
         mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
-        # mask=cv2.morphologyEx(mask,cv2.MORPH_CLOSE,kernel)
+        #mask=cv2.morphologyEx(mask,cv2.MORPH_CLOSE,kernel)
         mask = cv2.dilate(mask, kernel, iterations=1)
         res = cv2.bitwise_and(img, img, mask=mask)
-        cnts, heir = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2:]
+        cnts = cv2.findContours(mask.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)[-2]
         center = None
 
         if len(cnts) >= 1:
@@ -51,11 +52,11 @@ def main():
                 blur1 = cv2.medianBlur(blackboard_gray, 15)
                 blur1 = cv2.GaussianBlur(blur1, (5, 5), 0)
                 thresh1 = cv2.threshold(blur1, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)[1]
-                blackboard_cnts = cv2.findContours(thresh1.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)[1]
+                blackboard_cnts = cv2.findContours(thresh1.copy(), cv2.RETR_TREE, cv2.CHAIN_APPROX_NONE)[-2]
                 if len(blackboard_cnts) >= 1:
                     cnt = max(blackboard_cnts, key=cv2.contourArea)
                     print(cv2.contourArea(cnt))
-                    if cv2.contourArea(cnt) > 2000:
+                    if cv2.contourArea(cnt) > 200:
                         x, y, w, h = cv2.boundingRect(cnt)
                         digit = blackboard_gray[y:y + h, x:x + w]
                         pred_probab, pred_class = keras_predict(model, digit)
@@ -64,7 +65,7 @@ def main():
             pts = deque(maxlen=512)
             blackboard = np.zeros((480, 640, 3), dtype=np.uint8)
             img = overlay(img, emojis[pred_class], 400, 250, 100, 100)
-        cv2.imshow("Frame", img)
+        cv2.imshow("Draw_Here", img)
         k = cv2.waitKey(10)
         if k == 27:
             break
@@ -88,7 +89,7 @@ def keras_process_image(img):
 
 
 def get_QD_emojis():
-    emojis_folder = 'qd_emo/'
+    emojis_folder = 'E:\shristi_QuickDraw\QuickDraw-master\qd_emo/'
     emojis = []
     for emoji in range(len(os.listdir(emojis_folder))):
         print(emoji)
